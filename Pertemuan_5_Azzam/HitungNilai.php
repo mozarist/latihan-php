@@ -7,16 +7,45 @@
   </head>
   <body class="bg-gray-100 flex items-center justify-center min-h-screen gap-10">
 
+
+
     <?php
-    $nama = $nilai_akhir = $predikat = "";
+    $nama = "";
+    $nilai_akhir = "";
+    $predikat = ""; 
+    $tugas = "";
 
-    if (isset($_POST['hitung'])) {
-        $nama = $_POST['nama'] ?? '';
-        $tugas = $_POST['tugas'] ?? 0;
-        $uts = $_POST['uts'] ?? 0;
-        $uas = $_POST['uas'] ?? 0;
+    $uts = ""; 
+    $uas = "";
+    
+// isset() memeriksa apakah variabel ada dan tidak bernilai null.
+//         Mengembalikan true jika variabel ada dan tidak null.
 
+// !isset() memeriksa apakah variabel tidak ada atau bernilai null.
+//          Mengembalikan true jika variabel tidak ada atau null.
+
+//  session : digunakan untuk menyimpan data sementara yang dapat diakses
+//            oleh pengguna selama periode tertentu
+
+
+session_start();
+
+// memeriksa apakah $_SESSION['siswaList'] sudah ada dalam sesi atau belum
+if(!isset($_SESSION['siswaList'])) { //true
+    $_SESSION['siswaList'] = []; //jika kondisi true maka akan dibuatkan array kosong
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['nama']) && isset($_POST['tugas']) && isset($_POST['uts']) && isset($_POST['uas'])){
+    // cek apakah inputan form ada dan tidak kosong
+        $nama = $_POST['nama'];
+        $tugas = $_POST['tugas'];
+        $uts = $_POST['uts'];
+        $uas = $_POST['uas'];
+
+        
         if (is_numeric($tugas) && is_numeric($uts) && is_numeric($uas)) {
+
             $nilai_akhir = ($tugas * 0.3) + ($uts * 0.3) + ($uas * 0.4);
 
             if ($nilai_akhir >= 85) {
@@ -32,11 +61,25 @@
             }
         } else {
             $nilai_akhir = $predikat = "Input tidak valid";
-        }
+        }}
+
+    
+
+  
+
+        // simpan data ke dalam sesi
+        $_SESSION['siswaList'][] = [
+            'nama' => $nama,
+            'nilai_akhir' => $nilai_akhir,
+            'predikat' => $predikat,
+        ];
     }
 
     if (isset($_POST['delete'])) {
-        $nama = $nilai_akhir = $predikat = "";
+        session_destroy(); //hapus seluruh data sesi
+
+        session_start();
+        $_SESSION['siswaList'] = [];
     }
     ?>
 
@@ -53,7 +96,7 @@
             <input type="text" name="uts" class="w-full p-3 mb-4 border border-gray-200 rounded" autocomplete="off" placeholder="" >
             Nilai UAS
             <input type="text" name="uas" class="w-full p-3 mb-4 border border-gray-200 rounded" autocomplete="off" placeholder="" >
-            <input type="submit" name="hitung" value="Hitung Nilai" class="w-full p-3 mb-4 border border-gray-200 rounded bg-blue-500 hover:bg-blue-600 text-white">
+            <input type="submit" name="hitung" value="HitungNilai" class="w-full p-3 mb-4 border border-gray-200 rounded bg-blue-500 hover:bg-blue-600 text-white">
         </form>
     </div>
 
@@ -69,11 +112,13 @@
         </tr>
       </thead>
       <tbody>
+        <?php foreach ($_SESSION['siswaList'] as $list): ?>
         <tr>
-          <td class="border border-gray-300 text-center p-2"><?php echo $nama; ?></td>
-          <td class="border border-gray-300 text-center p-2"><?php echo $nilai_akhir; ?></td>
-          <td class="border border-gray-300 text-center p-2"><?php echo $predikat; ?></td>
+          <td class="border border-gray-300 text-center p-2"><?= ($list['nama']); ?></td>
+          <td class="border border-gray-300 text-center p-2"><?= ($list['nilai_akhir']); ?></td>
+          <td class="border border-gray-300 text-center p-2"><?= ($list['predikat']); ?></td>
         </tr>
+        <?php endforeach; ?>
       </tbody>
     </table>
     </div>
